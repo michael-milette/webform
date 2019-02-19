@@ -23,16 +23,24 @@
  *  @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$requiredFields = ['recipient', 'comments'];
+$debug = false;
 
-$page['lang'] = (empty($_REQUEST['lang']) && $_REQUEST['lang'] == 'fr' ? 'fr' : 'en');
+// Determine language of the page (default = English).
+
+$page['lang'] = (!empty($_GET['lang']) && $_GET['lang'] == 'fr' ? 'fr' : 'en');
+
 switch ($page['lang']) {
     case 'fr' : // French
+        $requiredFields = ['recipient', 'commentaires'];
         $page['title'] = 'Contactez-nous';
         break;
     default:    // English.
+        $requiredFields = ['recipient', 'comments'];
         $page['title'] = 'Contact us';
 }
-$page['breadcrumbs'] = '<li><a href="index-' . $page['lang'] . '.html">' . $page['title'] . '</a></li>';
-        
-require 'contact.php';
+$page['breadcrumbs'] =  '<li><a href="index-' . $page['lang'] . '.html">' . $page['title'] . '</a></li>';
+
+$page['hideshare'] = true;
+
+require '../includes/contact.php';
+
