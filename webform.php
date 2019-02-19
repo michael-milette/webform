@@ -33,13 +33,9 @@ if ($debug) {
     $recipient = 'support@your.domain.tld';
 }
 
-// Default is English.
+// Determine language of the page (default = English).
 
-if (!empty($_GET['lang'])) {
-    $page['lang'] = ($_GET['lang']  == 'fr' ? 'fr' : 'en');
-} else {
-    $page['lang'] = 'en';
-}
+$page['lang'] = (!empty($_GET['lang']) && $_GET['lang'] == 'fr' ? 'fr' : 'en');
 
 // Language strings.
 switch ($page['lang']) {
@@ -56,6 +52,7 @@ switch ($page['lang']) {
         $strings['thankyou'] = 'Merci';
         $strings['messagesent'] = "Le message a été envoyé.";
         $strings['messagefailed'] = "Le message n'as pas été livré.";
+        $strings['continue'] = 'Continuer';
         break;
     default:
         $strings['error'] = 'Error';
@@ -70,6 +67,7 @@ switch ($page['lang']) {
         $strings['thankyou'] = 'Thank you';
         $strings['messagesent'] = "The message was successfully sent.";
         $strings['messagefailed'] = "The message was NOT sent.";
+        $strings['continue'] = 'Continue';
 }
 
 // Defaults form fields - You can override these by setting them in a parent contact.php file.
@@ -133,9 +131,6 @@ foreach ($_REQUEST as $key => $value) {
                         $recipient = htmlentities (strip_tags(trim($value)), ENT_NOQUOTES);
                     }
                     break;
-                case 'lang':      // UI Language. Don't include in body of message.
-                    $lang = ($value == 'fr' ? 'fr' : 'en');
-                    break;
                 case 'redirect':  // Redirect after successfully sent.
                     $redirect = htmlentities (strip_tags(trim($value)), ENT_NOQUOTES);
                     break;
@@ -143,6 +138,8 @@ foreach ($_REQUEST as $key => $value) {
                 case 'email':     // Email field. Don't include in body of message.
                     $sender = htmlentities (strip_tags(trim($value)), ENT_NOQUOTES);
                     break;
+                case 'lang':      // User Interfact Language.
+                    $lang = ($value == 'fr' ? 'fr' : 'en');
                 default:          // All other fields. Include in the message.
                     // Join array of values. Example: <select multiple>.
                     if (is_array($value)) {
@@ -159,6 +156,11 @@ foreach ($_REQUEST as $key => $value) {
     }
 }
 
+// Configure default Continue button, if specified.
+if (empty($redirect)) {
+    $redirect = '/index-' . $page['lang'] . '.html';
+}
+
 $htmlmessage .= '<hr>' . PHP_EOL;
 $htmlmessage .= '<strong>Additional information</strong><br><br>' . PHP_EOL;
 $htmlmessage .= '<strong>IP address :</strong><br>' . getremoteaddr() . PHP_EOL;
@@ -167,13 +169,13 @@ $htmlmessage .= '<strong>User agent :</strong><br>' . $_SERVER['HTTP_USER_AGENT'
 // Send the message.
 
 if (sendemail($sender, $recipient, $subject, $htmlmessage)) {
-    if (!empty($redirect)) {
-        header("Location: $redirect");
-        exit;
-    }
     $page['title'] = $strings['thankyou'];
     $page['content'] = '<p>' . $strings['messagesent'] . '</p>' . PHP_EOL;
+    if (!empty($redirect)) {
+        $page['content'] .= "<p><a href=\"$redirect\" class=\"btn btn-primary\">${strings['continue']}</a>";
+    }
 } else {
+    $redirect = '';
     $page['title'] = $strings['error'];
     $page['content'] = '<p>' . $strings['messagefailed'] . '</p>' . PHP_EOL;
 }
