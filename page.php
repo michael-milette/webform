@@ -35,11 +35,7 @@ if ($debug) {
 
 // Determine language of the page (default = English).
 
-if (empty($page['lang']) && !empty($_GET['lang'])) {
-    $page['lang'] = ($_GET['lang']  == 'fr' ? 'fr' : 'en');
-} else {
-    $page['lang'] = 'en';
-}
+$page['lang'] = (!empty($_GET['lang']) && $_GET['lang'] == 'fr' ? 'fr' : 'en');
 
 // Set some defaults in case information has not yet been set.
 $page['title'] = isset($page['title']) ? $page['title'] : '$page[\'title\']';
